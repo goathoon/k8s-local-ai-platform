@@ -14,6 +14,26 @@ Velog 글 기반으로 개인 RAG를 구성하고, `llama-cli`로 최종 답변�
 - `cmake` (llama.cpp 빌드용)
 - `apps/whoami-llm/qwen.gguf` 파일
 
+> 참고: `qwen.gguf`는 용량 문제로 저장소에 포함되지 않을 수 있습니다.
+> 직접 `apps/whoami-llm/qwen.gguf` 경로에 두거나 `--model /absolute/path/to/model.gguf`로 대체 모델 경로를 지정하세요.
+
+### qwen.gguf 다운로드 예시
+
+아래에서 `<HF_REPO>`와 `<GGUF_FILE>`을 원하는 Qwen GGUF로 바꿔 실행하세요.
+
+```bash
+pip install -U "huggingface_hub[cli]"
+huggingface-cli download <HF_REPO> <GGUF_FILE> --local-dir apps/whoami-llm
+mv apps/whoami-llm/<GGUF_FILE> apps/whoami-llm/qwen.gguf
+```
+
+`huggingface-cli` 대신 `curl`을 쓸 경우:
+
+```bash
+curl -L "https://huggingface.co/<HF_REPO>/resolve/main/<GGUF_FILE>?download=true" \
+  -o apps/whoami-llm/qwen.gguf
+```
+
 ## 설치
 
 저장소 루트에서:
