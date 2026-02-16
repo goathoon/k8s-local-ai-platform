@@ -7,8 +7,10 @@ src/whoami_llm.egg-info/dependency_links.txt
 src/whoami_llm.egg-info/entry_points.txt
 src/whoami_llm.egg-info/requires.txt
 src/whoami_llm.egg-info/top_level.txt
+src/whoami_llm/chunking/chunker.py
 src/whoami_llm/extract/velog_rss_description.py
 src/whoami_llm/storage/__init__.py
+src/whoami_llm/storage/chunk_store.py
 src/whoami_llm/storage/document_store.py
 src/whoami_llm/storage/jsonl_store.py
 src/whoami_llm/velog/models.py

@@ -2,11 +2,22 @@ import typer
 import json
 
 from whoami_llm.extract.velog_rss_description import description_to_text
-from whoami_llm.storage.document_store import write_documents
-from whoami_llm.velog.rss import fetch_posts, extract_username
+from whoami_llm.storage.document_store import write_documents,documents_file
 from whoami_llm.storage.jsonl_store import save_posts, posts_file
+from whoami_llm.storage.chunk_store import write_chunks
+from whoami_llm.velog.rss import fetch_posts, extract_username
+from whoami_llm.velog.rss import extract_username
+from whoami_llm.chunking.chunker import ChunkConfig, chunk_text, count_tokens
 
 app = typer.Typer()
+
+def _print_chunk_config(cfg: ChunkConfig):
+    typer.echo(
+        "Chunk config -> "
+        f"target_tokens={cfg.target_tokens}, "
+        f"overlap_tokens={cfg.overlap_tokens}, "
+        f"min_tokens={cfg.min_tokens}"
+    )
 
 
 def _load_posts_from_file(pfile):
@@ -118,6 +129,64 @@ def build(
     if warn_count:
         typer.echo(f"Warnings: {warn_count} posts had text shorter than {min_chars} chars.")
 
+@app.command()
+def chunk(
+    blog: str = typer.Option(..., "--blog"),
+    target_tokens: int = typer.Option(250, "--target-tokens", help="권장 500~800"),
+    overlap_tokens: int = typer.Option(100, "--overlap-tokens"),
+    min_tokens: int = typer.Option(200, "--min-tokens"),
+):
+    """
+    documents.jsonl -> chunks.jsonl
+    """
+    username = extract_username(blog)
+    dfile = documents_file(username)
+    if not dfile.exists():
+        raise typer.BadParameter(f"documents file not found: {dfile}. Run extract/build first.")
+
+    cfg = ChunkConfig(
+        target_tokens=target_tokens,
+        overlap_tokens=overlap_tokens,
+        min_tokens=min_tokens,
+    )
+    _print_chunk_config(cfg)
+
+    rows: list[dict] = []
+    total_docs = 0
+    total_chunks = 0
+
+    with open(dfile, "r", encoding="utf-8") as f:
+        for doc_idx, line in enumerate(f, start=1):
+            doc = json.loads(line)
+            total_docs += 1
+
+            url = doc.get("url")
+            title = doc.get("title")
+            published = doc.get("published")
+            text = doc.get("text") or ""
+
+            chunks = chunk_text(text, cfg)
+            for c_idx, c in enumerate(chunks, start=1):
+                rows.append(
+                    {
+                        "source": doc.get("source", "rss_description"),
+                        "doc_id": doc_idx,
+                        "chunk_id": c_idx,
+                        "url": url,
+                        "title": title,
+                        "published": published,
+                        "text": c,
+                        "token_count": count_tokens(c),
+                    }
+                )
+
+            total_chunks += len(chunks)
+            typer.echo(f"[doc {doc_idx}] chunks={len(chunks)} url={url}")
+
+    out = write_chunks(username, rows)
+    typer.echo(f"Total docs: {total_docs}")
+    typer.echo(f"Total chunks created: {total_chunks}")
+    typer.echo(f"Saved -> {out}")
 
 if __name__ == "__main__":
     app()
