@@ -1,0 +1,14 @@
+[project]
+name = "whoami-llm"
+version = "0.1.0"
+description = "Ask who someone is based on their Velog posts (local RAG)."
+requires-python = ">=3.10"
+
+dependencies = [
+    "typer>=0.12",
+    "requests>=2.31",
+    "feedparser>=6.0.11",
+]
+
+[project.scripts]
+whoami-llm = "whoami_llm.cli:app"
