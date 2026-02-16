@@ -1,0 +1,2 @@
+[console_scripts]
+whoami-llm = whoami_llm.cli:app
