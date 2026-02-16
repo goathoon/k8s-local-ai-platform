@@ -1,6 +1,7 @@
 # whoami-llm (Local CLI Only)
 
 Velog 글 기반으로 개인 RAG를 구성하고, `llama-cli`로 최종 답변을 생성하는 로컬 전용 가이드입니다.
+루트 `README.md`가 빠른 시작용이라면, 이 문서는 상세 옵션/문제해결 중심 가이드입니다.
 
 ## 범위
 
