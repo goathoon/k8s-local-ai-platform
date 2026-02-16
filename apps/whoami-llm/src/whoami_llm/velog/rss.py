@@ -48,7 +48,7 @@ def fetch_posts(blog: str) -> list[VelogPost]:
             VelogPost(
                 title=e.title,
                 link=e.link,
-                pub_date=getattr(e, "pubDate", None),
+                pub_date=e.get("published") or e.get("pubDate"),
                 description=getattr(e, "description", None),
             )
         )
