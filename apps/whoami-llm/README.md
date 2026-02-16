@@ -36,18 +36,18 @@ git submodule update --init --recursive apps/whoami-llm/llama.cpp
 
 ### qwen.gguf 다운로드 예시
 
-아래에서 `<HF_REPO>`와 `<GGUF_FILE>`을 원하는 Qwen GGUF로 바꿔 실행하세요.
-
 ```bash
 pip install -U "huggingface_hub[cli]"
-huggingface-cli download <HF_REPO> <GGUF_FILE> --local-dir apps/whoami-llm
-mv apps/whoami-llm/<GGUF_FILE> apps/whoami-llm/qwen.gguf
+HF_REPO="Qwen/Qwen2.5-3B-Instruct-GGUF"
+GGUF_FILE="qwen2.5-3b-instruct-q5_k_m.gguf"
+huggingface-cli download "$HF_REPO" "$GGUF_FILE" --local-dir apps/whoami-llm
+mv "apps/whoami-llm/$GGUF_FILE" apps/whoami-llm/qwen.gguf
 ```
 
 `huggingface-cli` 대신 `curl`을 쓸 경우:
 
 ```bash
-curl -L "https://huggingface.co/<HF_REPO>/resolve/main/<GGUF_FILE>?download=true" \
+curl -L "https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/resolve/main/qwen2.5-3b-instruct-q5_k_m.gguf?download=true" \
   -o apps/whoami-llm/qwen.gguf
 ```
 
@@ -107,14 +107,14 @@ whoami-llm search "이 개발자는 어떤 기술 스택을 주로 다루나?" \
 ```bash
 whoami-llm rag "이 개발자는 어떤 엔지니어인가?" \
   --blog https://velog.io/@<username>/posts \
-  --retrieval-mode auto \
-  --llama-cli "$(python3 -c 'from pathlib import Path; print((Path(\"apps/whoami-llm/llama.cpp/build/bin/llama-cli\")).resolve())')"
+  --retrieval-mode auto
 ```
 
 - `--retrieval-mode`: `auto`(기본), `semantic`, `persona`
   - `auto`: 질문이 성향/철학형이면 질의 확장 + 다양성 기반 검색을 자동 사용
   - `semantic`: 기존 단일 semantic 검색
   - `persona`: 성향/의사결정 관점 검색을 강제로 사용
+- `--llama-cli` 미지정 시 기본값으로 `apps/whoami-llm/llama-cli-cpu`(존재 시), 없으면 PATH의 `llama-cli`를 사용
 
 ## Retrieval 개선 (성향/철학 질문 대응)
 
@@ -153,7 +153,7 @@ whoami-llm rag "이 개발자는 어떤 생각을 가지고 있는가?" \
 macOS Metal 초기화 오류가 있으면 래퍼를 대신 사용하세요:
 
 ```bash
---llama-cli "$(python3 -c 'from pathlib import Path; print((Path(\"apps/whoami-llm/llama-cli-cpu\")).resolve())')"
+--llama-cli apps/whoami-llm/llama-cli-cpu
 ```
 
 ## 검증된 전체 실행 예시 (`goat_hoon`)
@@ -173,8 +173,7 @@ whoami-llm chunk --blog https://velog.io/@goat_hoon/posts
 whoami-llm embed --blog https://velog.io/@goat_hoon/posts
 
 whoami-llm rag "이 개발자는 어떤 엔지니어인가?" \
-  --blog https://velog.io/@goat_hoon/posts \
-  --llama-cli "$(python3 -c 'from pathlib import Path; print((Path(\"apps/whoami-llm/llama.cpp/build/bin/llama-cli\")).resolve())')"
+  --blog https://velog.io/@goat_hoon/posts
 ```
 
 ## 모델 선택 방식
@@ -189,8 +188,7 @@ whoami-llm rag "이 개발자는 어떤 엔지니어인가?" \
 ```bash
 whoami-llm rag "요약해줘" \
   --blog https://velog.io/@<username>/posts \
-  --model /absolute/path/to/model.gguf \
-  --llama-cli "$(python3 -c 'from pathlib import Path; print((Path(\"apps/whoami-llm/llama.cpp/build/bin/llama-cli\")).resolve())')"
+  --model /absolute/path/to/model.gguf
 ```
 
 ## 자주 쓰는 옵션
@@ -214,7 +212,7 @@ whoami-llm rag "요약해줘" \
 - `llama-cli` 실행 실패:
   - `--llama-cli`에 실행파일 절대경로 지정
   - Python 경로 해석 예시:
-    - `--llama-cli "$(python3 -c 'from pathlib import Path; print((Path(\"apps/whoami-llm/llama.cpp/build/bin/llama-cli\")).resolve())')"`
+    - `--llama-cli /absolute/path/to/llama-cli`
   - macOS Metal 오류가 보이면 `apps/whoami-llm/llama-cli-cpu` 사용
 - 모델 파일 경로 오류:
   - 기본 파일 `apps/whoami-llm/qwen.gguf` 존재 여부 확인

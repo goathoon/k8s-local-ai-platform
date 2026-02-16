@@ -35,14 +35,16 @@ git submodule update --init --recursive apps/whoami-llm/llama.cpp
 
 ```bash
 pip install -U "huggingface_hub[cli]"
-huggingface-cli download <HF_REPO> <GGUF_FILE> --local-dir apps/whoami-llm
-mv apps/whoami-llm/<GGUF_FILE> apps/whoami-llm/qwen.gguf
+HF_REPO="Qwen/Qwen2.5-3B-Instruct-GGUF"
+GGUF_FILE="qwen2.5-3b-instruct-q5_k_m.gguf"
+huggingface-cli download "$HF_REPO" "$GGUF_FILE" --local-dir apps/whoami-llm
+mv "apps/whoami-llm/$GGUF_FILE" apps/whoami-llm/qwen.gguf
 ```
 
 대체(`curl`):
 
 ```bash
-curl -L "https://huggingface.co/<HF_REPO>/resolve/main/<GGUF_FILE>?download=true" \
+curl -L "https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/resolve/main/qwen2.5-3b-instruct-q5_k_m.gguf?download=true" \
   -o apps/whoami-llm/qwen.gguf
 ```
 
@@ -76,9 +78,10 @@ whoami-llm embed --blog https://velog.io/@<username>/posts
 ```bash
 whoami-llm rag "이 개발자는 어떤 엔지니어인가?" \
   --blog https://velog.io/@<username>/posts \
-  --retrieval-mode auto \
-  --llama-cli "$(python3 -c 'from pathlib import Path; print((Path("apps/whoami-llm/llama-cli-cpu")).resolve())')"
+  --retrieval-mode auto
 ```
+
+`--llama-cli`를 지정하지 않으면 기본값으로 `apps/whoami-llm/llama-cli-cpu`(존재 시), 없으면 PATH의 `llama-cli`를 사용합니다.
 
 ## Related Docs
 
